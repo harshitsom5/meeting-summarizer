@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Meeting Summarizer</title>
+
+    <style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        min-height: 100vh;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #111827, #1e1b4b);
+        color: white;
+        padding: 42px 20px;
+        text-align: center;
+        border-bottom: 1px solid #312e81;
+    }
+
+    .header h1 {
+        font-size: 38px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        letter-spacing: -0.5px;
+    }
+
+    .header p {
+        color: #c7d2fe;
+        font-size: 16px;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 1150px;
+        margin: 42px auto;
+    }
+
+    .upload-card {
+        background: linear-gradient(145deg, #1e293b, #172033);
+        border-radius: 20px;
+        padding: 42px;
+        text-align: center;
+        border: 1px solid #334155;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    .upload-card h2 {
+        font-size: 27px;
+        margin-bottom: 10px;
+        color: #f8fafc;
+    }
+
+    .upload-description {
+        color: #94a3b8;
+        margin-bottom: 30px;
+        font-size: 15px;
+    }
+
+    .upload-area {
+        border: 2px dashed #475569;
+        border-radius: 15px;
+        padding: 32px 20px;
+        background: rgba(15, 23, 42, 0.65);
+        transition: 0.25s ease;
+    }
+
+    .upload-area:hover {
+        border-color: #818cf8;
+        background: rgba(30, 27, 75, 0.45);
+    }
+
+    .upload-area input {
+        width: 100%;
+        max-width: 430px;
+        padding: 12px;
+        background: #f8fafc;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        color: #1e293b;
+    }
+
+    .file-name {
+        margin-top: 15px;
+        color: #a5b4fc;
+        font-size: 14px;
+        min-height: 20px;
+    }
+
+    .upload-button {
+        margin-top: 25px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+        padding: 14px 34px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.25s ease;
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+    }
+
+    .upload-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(99, 102, 241, 0.4);
+    }
+
+    .upload-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .status {
+        margin-top: 18px;
+        min-height: 22px;
+        color: #94a3b8;
+        font-size: 14px;
+    }
+
+    .status.success {
+        color: #4ade80;
+    }
+
+    .status.error {
+        color: #f87171;
+    }
+
+    .status.processing {
+        color: #c4b5fd;
+    }
+
+    .spinner {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        border: 2px solid #475569;
+        border-top-color: #a78bfa;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin-right: 7px;
+        vertical-align: -2px;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .results {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-top: 30px;
+    }
+
+    .result-card {
+        background: #1e293b;
+        border-radius: 18px;
+        padding: 25px;
+        border: 1px solid #334155;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .result-card:hover {
+        border-color: #475569;
+    }
+
+    .result-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #334155;
+    }
+
+    .result-header h2 {
+        font-size: 21px;
+        color: #f8fafc;
+    }
+
+    .result-label {
+        font-size: 12px;
+        color: #c4b5fd;
+        background: #312e81;
+        padding: 6px 10px;
+        border-radius: 7px;
+    }
+
+    .content {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 20px;
+        min-height: 250px;
+        max-height: 430px;
+        overflow-y: auto;
+        color: #cbd5e1;
+        line-height: 1.7;
+        font-size: 15px;
+    }
+
+    .content.empty {
+        color: #64748b;
+        text-align: center;
+        padding-top: 100px;
+    }
+
+    .summary-content h3 {
+        font-size: 17px;
+        color: #e0e7ff;
+        margin-top: 18px;
+        margin-bottom: 8px;
+    }
+
+    .summary-content h3:first-child {
+        margin-top: 0;
+    }
+
+    .summary-content p {
+        margin-bottom: 10px;
+    }
+
+    .summary-content ul {
+        margin: 8px 0 14px 20px;
+    }
+
+    .summary-content li {
+        margin-bottom: 7px;
+    }
+
+    .footer {
+        text-align: center;
+        color: #64748b;
+        font-size: 13px;
+        padding: 10px 20px 35px;
+    }
+
+    @media (max-width: 800px) {
+        .container {
+            width: 94%;
+            margin: 25px auto;
+        }
+
+        .header h1 {
+            font-size: 30px;
+        }
+
+        .upload-card {
+            padding: 28px 20px;
+        }
+
+        .results {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+    <header class="header">
+
+        <h1>Meeting Summarizer</h1>
+
+        <p>
+            Convert meeting audio into transcripts and AI powered summaries
+        </p>
+
+    </header>
+
+
+    <main class="container">
+
+        <section class="upload-card">
+
+            <h2>Upload Meeting Audio</h2>
+
+            <p class="upload-description">
+                Upload an audio recording to generate an accurate transcript
+                and an AI powered meeting summary.
+            </p>
+
+            <div class="upload-area">
+
+                <input
+                    type="file"
+                    id="audioFile"
+                    accept="audio/*"
+                >
+
+                <div class="file-name" id="fileName">
+                    No file selected
+                </div>
+
+            </div>
+
+            <button
+                class="upload-button"
+                id="uploadButton"
+                onclick="uploadAudio()"
+            >
+                Upload and Summarize
+            </button>
+
+            <div
+                class="status"
+                id="status"
+            >
+                Ready to process your audio.
+            </div>
+
+        </section>
+
+
+        <section class="results">
+
+            <div class="result-card">
+
+                <div class="result-header">
+
+                    <h2>Transcript</h2>
+
+                    <span class="result-label">
+                        Speech to Text
+                    </span>
+
+                </div>
+
+                <div
+                    class="content empty"
+                    id="transcript"
+                >
+                    Your transcript will appear here.
+                </div>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <div class="result-header">
+
+                    <h2>AI Summary</h2>
+
+                    <span class="result-label">
+                        Generated Summary
+                    </span>
+
+                </div>
+
+                <div
+                    class="content empty summary-content"
+                    id="summary"
+                >
+                    Your meeting summary will appear here.
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer class="footer">
+
+        Meeting Summarizer
+
+    </footer>
+
+
+    <script>
+
+        let selectedFile = null;
+
+
+        const audioFile =
+            document.getElementById("audioFile");
+
+        const fileName =
+            document.getElementById("fileName");
+
+        const uploadButton =
+            document.getElementById("uploadButton");
+
+        const status =
+            document.getElementById("status");
+
+        const transcript =
+            document.getElementById("transcript");
+
+        const summary =
+            document.getElementById("summary");
+
+
+        audioFile.addEventListener("change", function () {
+
+            selectedFile = this.files[0];
+
+            if (selectedFile) {
+
+                fileName.textContent =
+                    selectedFile.name;
+
+                status.textContent =
+                    "File selected. Ready to process.";
+
+                status.className = "status";
+
+            } else {
+
+                selectedFile = null;
+
+                fileName.textContent =
+                    "No file selected";
+
+            }
+
+        });
+
+
+        function formatSummary(text) {
+
+            if (!text) {
+                return "No summary returned.";
+            }
+
+            let formatted = text;
+
+            formatted = formatted.replace(
+                /^###\s*(.+)$/gm,
+                "<h3>$1</h3>"
+            );
+
+            formatted = formatted.replace(
+                /^##\s*(.+)$/gm,
+                "<h3>$1</h3>"
+            );
+
+            formatted = formatted.replace(
+                /^#\s*(.+)$/gm,
+                "<h3>$1</h3>"
+            );
+
+            formatted = formatted.replace(
+                /\*\*(.*?)\*\*/g,
+                "<strong>$1</strong>"
+            );
+
+            const lines = formatted.split("\n");
+
+            let result = "";
+            let inList = false;
+
+            for (let line of lines) {
+
+                line = line.trim();
+
+                if (line.startsWith("* ")) {
+
+                    if (!inList) {
+                        result += "<ul>";
+                        inList = true;
+                    }
+
+                    result += "<li>" +
+                        line.substring(2) +
+                        "</li>";
+
+                } else if (line.startsWith("- ")) {
+
+                    if (!inList) {
+                        result += "<ul>";
+                        inList = true;
+                    }
+
+                    result += "<li>" +
+                        line.substring(2) +
+                        "</li>";
+
+                } else {
+
+                    if (inList) {
+                        result += "</ul>";
+                        inList = false;
+                    }
+
+                    if (line.startsWith("<h3>")) {
+
+                        result += line;
+
+                    } else if (line.length > 0) {
+
+                        result += "<p>" + line + "</p>";
+
+                    }
+
+                }
+
+            }
+
+            if (inList) {
+                result += "</ul>";
+            }
+
+            return result;
+        }
+
+
+        async function uploadAudio() {
+
+            if (!selectedFile) {
+
+                status.textContent =
+                    "Please choose an audio file first.";
+
+                status.className =
+                    "status error";
+
+                return;
+
+            }
+
+
+            const formData =
+                new FormData();
+
+            formData.append(
+                "file",
+                selectedFile
+            );
+
+
+            uploadButton.textContent =
+                "Processing...";
+
+            uploadButton.disabled =
+                true;
+
+
+            status.innerHTML =
+                '<span class="spinner"></span>' +
+                'Transcribing audio and generating summary...';
+
+            status.className =
+                "status processing";
+
+
+            transcript.className =
+                "content";
+
+            transcript.textContent =
+                "Processing transcript...";
+
+
+            summary.className =
+                "content summary-content";
+
+            summary.textContent =
+                "Generating AI summary...";
+
+
+            try {
+
+                const response =
+                    await fetch("http://127.0.0.1:8000/upload", {
+
+                        method: "POST",
+
+                        body: formData
+
+                    });
+
+
+                const responseText =
+                    await response.text();
+
+                let data;
+
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    throw new Error(
+                        "Backend returned an invalid response: " +
+                        responseText.substring(0, 150)
+                    );
+                }
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.detail ||
+                        data.message ||
+                        "Server returned an error."
+                    );
+
+                }
+
+
+                transcript.textContent =
+                    data.transcript ||
+                    "No transcript returned.";
+
+
+                summary.innerHTML =
+                    formatSummary(data.summary);
+
+
+                status.textContent =
+                    "Meeting processed successfully.";
+
+                status.className =
+                    "status success";
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                transcript.textContent =
+                    "Unable to generate transcript.";
+
+
+                summary.textContent =
+                    "Unable to generate summary.";
+
+
+                status.textContent =
+                    "Something went wrong: " +
+                    error.message;
+
+                status.className =
+                    "status error";
+
+
+            } finally {
+
+                uploadButton.textContent =
+                    "Upload and Summarize";
+
+                uploadButton.disabled =
+                    false;
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>
