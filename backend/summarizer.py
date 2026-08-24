@@ -4,10 +4,32 @@ import os
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
+
+DEMO_MODE = True
 
 
 def summarize_transcript(transcript):
+
+    if DEMO_MODE:
+        return """
+### Meeting Summary
+
+The meeting discussed the current project progress and the tasks required for the next development phase.
+
+### Key Decisions
+
+* The team will continue development according to the planned requirements.
+* Pending issues will be reviewed before the next meeting.
+
+### Action Items
+
+* Complete the remaining development tasks.
+* Review the implementation and prepare the next update.
+"""
+
     prompt = f"""
 You are a meeting summarization assistant.
 
